@@ -126,7 +126,13 @@ public class DataUtil {
                 .queryParam("pass", code)
                 .dataString(dataBody)
                 .contentType("application/json");
+
         GluonObservableObject<Usuario> usuarioNuevo = DataProvider.retrieveObject(restClient.createObjectDataReader(Usuario.class));
+        usuarioNuevo.initializedProperty().addListener((obs,ov,nv) ->{
+            if(nv && usuarioNuevo.get() != null) {
+                System.out.println("Recuperando usuario seleccionada de la BD" + usuarioNuevo.get().getEmail() + "-" + usuarioNuevo.get().getClave());
+            }
+        });
     }
 
 
