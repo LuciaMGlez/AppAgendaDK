@@ -36,6 +36,7 @@ public class AppAgendaDK extends Application {
         dataUtil.obtenerTodasPersonas();
         ObservableList<Persona> oldPers = dataUtil.getOldPersonas();
 
+
         // Pasamos los datos obtenidos a la clase controladora de inicio
         inicioController.setDataUtil(dataUtil);
         inicioController.setOldProv(oldProv);
