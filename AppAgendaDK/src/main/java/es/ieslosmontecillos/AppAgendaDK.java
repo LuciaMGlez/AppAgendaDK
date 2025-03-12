@@ -34,13 +34,15 @@ public class AppAgendaDK extends Application {
             System.out.println(provincia.getNombre());
         }
         dataUtil.obtenerTodasPersonas();
+        dataUtil.obtenerTodosUsuarios();
         ObservableList<Persona> oldPers = dataUtil.getOldPersonas();
-
+        ObservableList<UserBody>olUsers = dataUtil.getOlUsuarios();
 
         // Pasamos los datos obtenidos a la clase controladora de inicio
         inicioController.setDataUtil(dataUtil);
         inicioController.setOldProv(oldProv);
         inicioController.setOldPers(oldPers);
+        inicioController.setOlUsers(olUsers);
         inicioController.setRootMain(rootMain);
 
         Scene scene = new Scene(rootMain, 758, 482);

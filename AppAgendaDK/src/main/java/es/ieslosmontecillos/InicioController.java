@@ -22,6 +22,7 @@ public class InicioController {
     private DataUtil dataUtil;
     ObservableList oldProv;
     ObservableList oldPers;
+    ObservableList olUsers;
 
 
     private Pane rootMain = new Pane();
@@ -34,19 +35,23 @@ public class InicioController {
 
     @FXML
     public void iniciaApp(Event event) {
-        try{
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("fxml/AgendaView.fxml"));
+       /* try{
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("fxml/AdminView.fxml"));
             Pane rootAgendaView = fxmlLoader.load();
-            rootMain.getChildren().add(rootAgendaView);
+           rootMain.getChildren().add(rootAgendaView);
 
             AgendaViewController agendaViewController = fxmlLoader.getController();
+            AdminViewController adminViewController = fxmlLoader.getController();
+            Pane rootAdminView = fxmlLoader.load();
+            rootMain.getChildren().add(rootAdminView);
+
             agendaViewController.setDataUtil(dataUtil);
             agendaViewController.setOldProvincias(oldProv);
             agendaViewController.setOldPersonas(oldPers);
             agendaViewController.cargarTodasPersonas();
         }catch (IOException e){
             System.out.println("IOException: "+ e);
-        }
+        }*/
     }
 
     public void setRootMain(Pane rootMain) {
@@ -62,44 +67,35 @@ public class InicioController {
     public void setOldPers(ObservableList oldPers) {
         this.oldPers = oldPers;
     }
+    public void setOlUsers(ObservableList oldUsers) {
+        this.olUsers = oldUsers;
+    }
 
 
     @FXML
     public void onLogin(ActionEvent actionEvent) {
+        if (tfUser.getText().isBlank() || tfPasswd.getText().isBlank()){
+            lbError.setText("Complete los campos");
+            lbError.setTextFill(Color.RED);
+        }else if(tfUser.getText().equals("Admin") && tfPasswd.getText().equals("Admin")){
+            lbError.setText("Logueado");
+            try{
+                FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("fxml/AdminView.fxml"));
+                Pane rootAdminView = fxmlLoader.load();
+                AdminViewController adminViewController = fxmlLoader.getController();
+                rootMain.getChildren().add(rootAdminView);
 
-        ObservableList<Usuario> user = FXCollections.observableArrayList();
+                adminViewController.setDataUtil(dataUtil);
+                adminViewController.setOlUsers(olUsers);
+                adminViewController.cargarTodosUsuarios();
+                //adminViewController.setTableViewPrevio();
 
-        user.addListener(new ListChangeListener<Usuario>() {
-            boolean verificado = true;
-            Usuario usuarioNuevo = new Usuario();
-
-            @Override
-            public void onChanged(Change<? extends Usuario> change) {
-                for (Usuario usuario : dataUtil.getOlUsuarios()) {
-                    if (!tfUser.getText().equals(usuario.getEmail()) || tfPasswd.getText().equals(usuario.getClave())) {
-                        verificado = false;
-                        System.out.println("Error 1");
-                        break;
-                    } else if (usuario.isVigencia() == false) {
-                        verificado = false;
-                        System.out.println("Error 2");
-                        break;
-                    }
-                }
-
-                if (!verificado || tfUser.getText().equals(usuarioNuevo.getEmail()) || tfPasswd.getText().equals(usuarioNuevo.getClave())) {
-                    lbError.setText("Usuario y/o contraseña incorrecto. Inténtelo con otro usuario");
-                    lbError.setTextFill(Color.RED);
-                } else if (!verificado || usuarioNuevo.isVigencia() == false) {
-                    lbError.setText("Usuario deshabilitado. Intentelo con otro usuario");
-                    lbError.setTextFill(Color.RED);
-                } else {
-                    lbError.setText("Usuario logueado");
-                    lbError.setTextFill(Color.GREEN);
-
-                }
+            }catch (IOException e){
+                System.out.println("IOException: "+ e);
             }
-        });
+        } else{
+            lbError.setText("Usuario incorrecto");
+        }
     }
 
 }

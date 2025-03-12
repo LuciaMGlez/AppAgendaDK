@@ -8,12 +8,14 @@ import com.gluonhq.connect.provider.RestClient;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+
+import javax.json.Json;
 import javax.json.JsonObject;
 
 public class DataUtil {
     private ObservableList<Provincia> oldProvincias = FXCollections.observableArrayList();
     private ObservableList<Persona> oldPersonas = FXCollections.observableArrayList();
-    private ObservableList<Usuario>olUsuarios = FXCollections.observableArrayList();
+    private ObservableList<UserBody>olUsuarios = FXCollections.observableArrayList();
 
     private final String server = "192.168.100.22";
 
@@ -46,9 +48,27 @@ public class DataUtil {
             }
         });
     }
+
     public ObservableList<Persona> getOldPersonas() {
         return oldPersonas;
     }
+    public ObservableList<UserBody>getOlUsuarios() {
+        return olUsuarios;
+    }
+    public void obtenerTodosUsuarios() {
+        RestClient restClient = RestClient.create().method("GET").host("http://192.168.100.22:8081").path("/api/usuario/usuarios");
+        GluonObservableList<UserBody> usuarios = DataProvider.retrieveList(restClient.createListDataReader(UserBody.class));
+
+        usuarios.addListener(new ListChangeListener<UserBody>() {
+            @Override
+            public void onChanged(javafx.collections.ListChangeListener.Change<? extends UserBody> c){
+                if ((c.next())) {
+                    olUsuarios.add(c.getList().get(c.getFrom()));
+                }
+            }
+        });
+    }
+
     public void eliminarPersona(Persona persona) {
         int idPersona = persona.getId().intValue();
 
@@ -83,6 +103,18 @@ public class DataUtil {
         GluonObservableObject<Persona> personaActualizada = DataProvider.retrieveObject(restClient.createObjectDataReader(Persona.class));
     }
 
+
+    public void actualizarUsuario(UserBody user) {
+        int id = user.getId();
+
+        JsonConverter<UserBody>converter = new JsonConverter<>(UserBody.class);
+        JsonObject json = converter.writeToJson(user);
+        String dataBody = json.toString();
+        RestClient restClient = RestClient.create().method("PUT").host("http://192.168.100.22:8081").path("/api/usuario/"+id).dataString(dataBody).contentType("application/json");
+        GluonObservableObject<UserBody>usuarioActualizado = DataProvider.retrieveObject(restClient.createObjectDataReader(UserBody.class));
+
+    }
+
     public Persona findPersonaById(Integer id) {
         int idPersona = id.intValue();
         RestClient restClient = RestClient.create().method("GET").host("http://"+server+":8080").path("/api/v1/PERSONA/"+idPersona);
@@ -107,33 +139,8 @@ public class DataUtil {
         return provincia.get();
     }
 
-    public ObservableList<Usuario>getOlUsuarios() {
-        return olUsuarios;
-    }
 
-    public void addUsuario(Usuario usuario) {
-        String email = usuario.getEmail();
-        String code = usuario.getClave();
 
-        JsonConverter<Usuario>converter = new JsonConverter<>(Usuario.class);
-        JsonObject json = converter.writeToJson(usuario);
-        String dataBody = json.toString();
-
-        RestClient restClient = RestClient.create().method("POST")
-                .host("http://"+server+":8081")
-                .path("/api/usuario/login")
-                .queryParam("email", email)
-                .queryParam("pass", code)
-                .dataString(dataBody)
-                .contentType("application/json");
-
-        GluonObservableObject<Usuario> usuarioNuevo = DataProvider.retrieveObject(restClient.createObjectDataReader(Usuario.class));
-        usuarioNuevo.initializedProperty().addListener((obs,ov,nv) ->{
-            if(nv && usuarioNuevo.get() != null) {
-                System.out.println("Recuperando usuario seleccionada de la BD" + usuarioNuevo.get().getEmail() + "-" + usuarioNuevo.get().getClave());
-            }
-        });
-    }
 
 
 }
